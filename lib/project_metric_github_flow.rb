@@ -22,7 +22,7 @@ class ProjectMetricGithubFlow
   end
 
   def refresh
-    @raw_data = {commits: commits}
+    @raw_data = {commits: commits.map(&:to_h) }
   end
 
   def raw_data=(new)
