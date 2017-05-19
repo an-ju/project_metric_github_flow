@@ -6,9 +6,9 @@ class ProjectMetricGithubFlow
   attr_reader :raw_data
 
   def initialize(credentials, raw_data = nil)
-    @project_url = credentials[:project]
+    @project_url = credentials[:github_project]
     @identifier = URI.parse(@project_url).path[1..-1]
-    @client = Octokit::Client.new access_token: credentials[:token]
+    @client = Octokit::Client.new access_token: credentials[:github_access_token]
     @client.auto_paginate = true
 
     @raw_data = raw_data
@@ -34,6 +34,10 @@ class ProjectMetricGithubFlow
   def score
     refresh unless @raw_data
     @score = @raw_data[:data].length
+  end
+
+  def self.credentials
+    %I[github_project github_access_token]
   end
 
   private
