@@ -40,7 +40,8 @@ class ProjectMetricGithubFlow
     end
     @image ||= { chartType: 'github_flow',
                  titleText: 'GitHub commit frequency',
-                 data: image_data }.to_json
+                 data: { data: image_data,
+                         series: (Date.today - 7..Date.today) } }.to_json
   end
 
   def self.credentials
