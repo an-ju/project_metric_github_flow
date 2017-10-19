@@ -29,19 +29,16 @@ class ProjectMetricGithubFlow
   def score
     @raw_data ||= commits
     synthesize
-    @score ||= @dated_nums.each_value.inject { |sum, elem| sum + elem }.to_f / @dated_nums.size
+    @score ||= @named_nums.each_pair.inject(0) { |sum, (_, v)| sum + v}
   end
 
   def image
     @raw_data ||= commits
     synthesize
-    image_data = (Date.today - 7..Date.today).map do |date|
-      @dated_nums.has_key?(date.to_s) ? @dated_nums[date.to_s] : 0
-    end
     @image ||= { chartType: 'github_flow',
                  titleText: 'GitHub commit frequency',
-                 data: { data: image_data,
-                         series: (Date.today - 7..Date.today) } }.to_json
+                 data: { data: @named_nums.values,
+                         series: @named_nums.keys } }.to_json
   end
 
   def self.credentials
@@ -56,11 +53,9 @@ class ProjectMetricGithubFlow
 
   def synthesize
     @raw_data ||= commits
-    @dated_commits = @raw_data.group_by { |cmit| cmit[:commit][:committer][:date].to_date.to_s }
-    @dated_nums = {}
-    @dated_commits.each_pair do |key, val|
-      @dated_nums[key] = val.length
-    end
+    @named_commits = @raw_data.group_by { |cmit| cmit[:commit][:committer][:email] }
+    @named_nums = {}
+    @named_commits.each_pair { |key, val| @named_nums[key] = val.length }
   end
 
 end
