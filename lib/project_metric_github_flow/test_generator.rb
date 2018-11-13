@@ -1,6 +1,6 @@
 class ProjectMetricGithubFlow
   def self.fake_data
-    [fake_metric(10, 2), fake_metric(20, 3), fake_metric(10, 0)]
+    [fake_metric(10, 2), fake_metric(20, 1), fake_metric(0, 0)]
   end
 
   def self.fake_metric(pushes, branches)
