@@ -1,7 +1,9 @@
 require "project_metric_github_flow/version"
+require 'project_metric_github_flow/test_generator'
 require 'octokit'
 require 'json'
 require 'date'
+require 'time'
 
 class ProjectMetricGithubFlow
   attr_reader :raw_data
@@ -11,52 +13,52 @@ class ProjectMetricGithubFlow
     @identifier = URI.parse(@project_url).path[1..-1]
     @client = Octokit::Client.new access_token: credentials[:github_access_token]
     @client.auto_paginate = true
-    @main_branch = credentials[:github_main_branch]
 
     @raw_data = raw_data
   end
 
   def refresh
-    @raw_data = commits
-    @score = @image = nil
+    set_events
+    @raw_data = { events: @events }.to_json
   end
 
   def raw_data=(new)
     @raw_data = new
-    @score = nil
-    @image = nil
+    @events = JSON.parse(@raw_data)['events']
   end
 
   def score
-    @raw_data ||= commits
-    synthesize
-    @score ||= @named_nums.each_pair.inject(0) { |sum, (_, v)| sum + v}
+    refresh unless @raw_data
+    # Number of github events that happened in the past N days
+    @events.length
   end
 
   def image
-    @raw_data ||= commits
-    synthesize
+    refresh unless @raw_data
     @image ||= { chartType: 'github_flow',
-                 titleText: 'GitHub commit frequency',
-                 data: { data: @named_nums.values,
-                         series: @named_nums.keys } }.to_json
+                 data: { new_pushes: new_pushes,
+                         new_branches: new_branches,
+                         network_link: "https://github.com/#{@identifier}/network" } }.to_json
   end
 
   def self.credentials
-    %I[github_project github_access_token github_main_branch]
+    %I[github_project github_access_token]
   end
 
   private
 
-  def commits
-    @client.commits_since @identifier, Date.today - 7, sha: @main_branch
+  def set_events
+    # Events in the past three days
+    @events = @client.repository_events(@identifier)
+                     .select { |event| event[:created_at] > (Time.now - 3*24*60*60) }
   end
 
-  def synthesize
-    @raw_data ||= commits
-    @named_commits = @raw_data.group_by { |cmit| cmit[:commit][:committer][:email] }
-    @named_nums = {}
-    @named_commits.each_pair { |key, val| @named_nums[key] = val.length }
+  def new_pushes
+    @events.select { |event| event[:type].eql? 'PushEvent' }
+  end
+
+  def new_branches
+    @events.select { |event| event[:type].eql? 'CreateEvent' and event[:payload][:ref_type].eql? 'branch' }
   end
 
 end
