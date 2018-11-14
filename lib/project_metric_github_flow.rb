@@ -19,7 +19,7 @@ class ProjectMetricGithubFlow
 
   def refresh
     set_events
-    @raw_data = { events: @events }.to_json
+    @raw_data = { events: @events.map(&:to_h) }.to_json
   end
 
   def raw_data=(new)
