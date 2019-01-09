@@ -4,9 +4,12 @@ require 'octokit'
 require 'json'
 require 'date'
 require 'time'
+require 'project_metric_base'
 
 class ProjectMetricGithubFlow
-  attr_reader :raw_data
+  include ProjectMetricBase
+  add_credentials %I[github_project github_access_token]
+  add_raw_data %w[github_events]
 
   def initialize(credentials, raw_data = nil)
     @project_url = credentials[:github_project]
@@ -14,23 +17,12 @@ class ProjectMetricGithubFlow
     @client = Octokit::Client.new access_token: credentials[:github_access_token]
     @client.auto_paginate = true
 
-    @raw_data = raw_data
-  end
-
-  def refresh
-    set_events
-    @raw_data = { events: @events.map(&:to_h) }.to_json
-  end
-
-  def raw_data=(new)
-    @raw_data = new
-    @events = JSON.parse(@raw_data)['events']
+    complete_with raw_data
   end
 
   def score
-    refresh unless @raw_data
     # Number of github events that happened in the past N days
-    @events.length
+    @github_events.length
   end
 
   def image
@@ -38,27 +30,27 @@ class ProjectMetricGithubFlow
     @image ||= { chartType: 'github_flow',
                  data: { new_pushes: new_pushes,
                          new_branches: new_branches,
-                         network_link: "https://github.com/#{@identifier}/network" } }.to_json
+                         network_link: "https://github.com/#{@identifier}/network" } }
   end
 
-  def self.credentials
-    %I[github_project github_access_token]
+  def obj_id
+    nil
   end
 
   private
 
-  def set_events
+  def github_events
     # Events in the past three days
-    @events = @client.repository_events(@identifier)
-                     .select { |event| event[:created_at] > (Time.now - 3*24*60*60) }
+    @github_events = @client.repository_events(@identifier)
+                         .select { |event| event[:created_at] > (Time.now - 3*24*60*60) }
   end
 
   def new_pushes
-    @events.select { |event| event[:type].eql? 'PushEvent' }
+    @github_events.select { |event| event[:type].eql? 'PushEvent' }
   end
 
   def new_branches
-    @events.select { |event| event[:type].eql? 'CreateEvent' and event[:payload][:ref_type].eql? 'branch' }
+    @github_events.select { |event| event[:type].eql? 'CreateEvent' and event[:payload][:ref_type].eql? 'branch' }
   end
 
 end

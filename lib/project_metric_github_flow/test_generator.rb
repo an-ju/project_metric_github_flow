@@ -15,7 +15,7 @@ class ProjectMetricGithubFlow
     { chatType: 'github_flow',
       data: { pushes: push_events,
               branches: branch_events,
-              network_link: 'https://github.com/an-ju/projectscope/network' } }.to_json
+              network_link: 'https://github.com/an-ju/projectscope/network' } }
   end
 
   def self.push_event(create_time)

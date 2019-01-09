@@ -27,14 +27,14 @@ RSpec.describe ProjectMetricGithubFlow do
     end
 
     it 'should generate an image' do
-      expect(JSON.parse(metric.image)).to have_key('data')
+      expect(metric.image).to be_a(Hash)
     end
 
     it 'should set the image values correctly' do
-      image = JSON.parse(metric.image)
-      expect(image['data']['new_pushes']).not_to be_nil
-      expect(image['data']['new_branches']).not_to be_nil
-      expect(image['data']['network_link']).not_to be_nil
+      image = metric.image
+      expect(image[:data][:new_pushes]).not_to be_nil
+      expect(image[:data][:new_branches]).not_to be_nil
+      expect(image[:data][:network_link]).not_to be_nil
     end
   end
 
@@ -50,10 +50,10 @@ RSpec.describe ProjectMetricGithubFlow do
     end
 
     it 'should set image data correctly' do
-      image = JSON.parse(described_class.fake_data.first[:image])
-      expect(image['data']['pushes']).not_to be_nil
-      expect(image['data']['branches']).not_to be_nil
-      expect(image['data']['network_link']).not_to be_nil
+      image = described_class.fake_data.first[:image]
+      expect(image[:data][:pushes]).not_to be_nil
+      expect(image[:data][:branches]).not_to be_nil
+      expect(image[:data][:network_link]).not_to be_nil
     end
   end
 
