@@ -32,8 +32,8 @@ RSpec.describe ProjectMetricGithubFlow do
 
     it 'should set the image values correctly' do
       image = metric.image
-      expect(image[:data][:new_pushes]).not_to be_nil
-      expect(image[:data][:new_branches]).not_to be_nil
+      expect(image[:data][:new_pushes]).not_to be_empty
+      expect(image[:data][:new_branches]).not_to be_empty
       expect(image[:data][:network_link]).not_to be_nil
     end
   end

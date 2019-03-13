@@ -43,14 +43,15 @@ class ProjectMetricGithubFlow
     # Events in the past three days
     @github_events = @client.repository_events(@identifier)
                          .select { |event| event[:created_at] > (Time.now - 3*24*60*60) }
+                         .map(&:to_h)
   end
 
   def new_pushes
-    @github_events.select { |event| event[:type].eql? 'PushEvent' }
+    @github_events.select { |event| event['type'].eql? 'PushEvent' }
   end
 
   def new_branches
-    @github_events.select { |event| event[:type].eql? 'CreateEvent' and event[:payload][:ref_type].eql? 'branch' }
+    @github_events.select { |event| event['type'].eql? 'CreateEvent' and event['payload']['ref_type'].eql? 'branch' }
   end
 
 end
