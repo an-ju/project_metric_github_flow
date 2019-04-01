@@ -41,9 +41,9 @@ class ProjectMetricGithubFlow
 
   def github_events
     # Events in the past two weeks
-    @github_events = @client.repository_events(@identifier)
-                         .select { |event| event[:created_at] > (Time.now - 14*24*60*60) }
-                         .map(&:to_h)
+    events = @client.repository_events(@identifier)
+                    .select { |event| event[:created_at] > (Time.now - 14*24*60*60) }
+    @github_events = JSON.parse(events.to_json)
   end
 
   def new_pushes
