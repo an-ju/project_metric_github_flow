@@ -43,6 +43,7 @@ class ProjectMetricGithubFlow
     # Events in the past two weeks
     events = @client.repository_events(@identifier)
                     .select { |event| event[:created_at] > (Time.now - 14*24*60*60) }
+                    .map(&:to_h)
     @github_events = JSON.parse(events.to_json)
   end
 
