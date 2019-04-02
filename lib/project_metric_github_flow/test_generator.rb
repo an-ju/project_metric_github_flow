@@ -13,8 +13,8 @@ class ProjectMetricGithubFlow
     push_events = Array.new(pushes) { push_event(Time.now - 60*60*rand(24 * 3))}
     branch_events = Array.new(branches) { branch_event(Time.now - 60*60*rand(24*3))}
     { chatType: 'github_flow',
-      data: { pushes: push_events,
-              branches: branch_events,
+      data: { new_pushes: push_events,
+              new_branches: branch_events,
               network_link: 'https://github.com/an-ju/projectscope/network' } }
   end
 
